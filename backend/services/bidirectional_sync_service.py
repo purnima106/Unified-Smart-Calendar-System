@@ -496,9 +496,9 @@ class BidirectionalSyncService:
         return MeetingDetectionService.is_microsoft_real_meeting(event=event)
 
     def _build_microsoft_blocker_payload(self, event: Event) -> dict:
-        """Construct Microsoft blocker event body."""
+        """Construct Microsoft blocker event body with actual event title."""
         return {
-            'subject': self.MIRROR_TITLE,
+            'subject': event.title or 'Busy',  # Use actual event title instead of [Mirror] Busy
             'start': {
                 'dateTime': self._format_datetime(event.start_time),
                 'timeZone': 'Asia/Kolkata'
@@ -516,9 +516,9 @@ class BidirectionalSyncService:
         }
 
     def _build_google_blocker_payload(self, event: Event) -> dict:
-        """Construct Google blocker event body."""
+        """Construct Google blocker event body with actual event title."""
         return {
-            'summary': self.MIRROR_TITLE,
+            'summary': event.title or 'Busy',  # Use actual event title instead of [Mirror] Busy
             'start': {
                 'dateTime': self._format_datetime(event.start_time),
                 'timeZone': 'Asia/Kolkata'
