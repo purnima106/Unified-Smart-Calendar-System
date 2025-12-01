@@ -1,0 +1,301 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-gray-50 dark:bg-black text-gray-900 dark:text-white;
+    line-height: 1.6;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  * {
+    @apply transition-colors duration-150;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-primary {
+    @apply btn bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md focus:ring-purple-500 active:scale-[0.98];
+  }
+  
+  .btn-secondary {
+    @apply btn bg-white dark:bg-gray-900 text-gray-700 dark:text-white border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600 focus:ring-gray-500 active:scale-[0.98];
+  }
+  
+  .btn-google {
+    @apply btn bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg focus:ring-purple-500 active:scale-[0.98];
+  }
+  
+  .btn-microsoft {
+    @apply btn bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg focus:ring-purple-500 active:scale-[0.98];
+  }
+  
+  .card {
+    @apply bg-white dark:bg-black dark:text-white rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 transition-all duration-300;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .card-hover {
+    @apply card hover:shadow-lg dark:hover:shadow-xl hover:-translate-y-0.5;
+  }
+
+  .card-elevated {
+    @apply bg-white dark:bg-black dark:text-white rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-6;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .input {
+    @apply w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-black dark:text-white text-gray-900;
+  }
+
+  .input:focus {
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  }
+  
+  .badge-google {
+    @apply badge bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700;
+  }
+  
+  .badge-microsoft {
+    @apply badge bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700;
+  }
+  
+  .badge-conflict {
+    @apply badge bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700;
+  }
+  
+  .badge-success {
+    @apply badge bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700;
+  }
+
+  .stat-card {
+    @apply card-hover relative overflow-hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700;
+  }
+
+  .section-header {
+    @apply mb-6 pb-4 border-b border-gray-200 dark:border-gray-800;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-gray-900 dark:text-white;
+  }
+
+  .section-subtitle {
+    @apply text-gray-600 dark:text-gray-300 mt-1 text-sm;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* FullCalendar Custom Styles */
+.fc {
+  @apply font-sans;
+}
+
+.fc-toolbar {
+  @apply mb-6 pb-4 border-b border-gray-200 dark:border-gray-800;
+}
+
+.fc-toolbar-title {
+  @apply text-2xl font-bold text-gray-900 dark:text-white;
+}
+
+.fc-button {
+  @apply btn-secondary !important;
+  @apply shadow-sm hover:shadow-md !important;
+}
+
+.fc-button-primary {
+  @apply btn-primary !important;
+}
+
+.fc-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.fc-event {
+  @apply cursor-pointer transition-all duration-200 rounded-lg;
+  border: none !important;
+  padding: 2px 4px !important;
+}
+
+.fc-event:hover {
+  @apply shadow-lg transform scale-[1.02];
+  z-index: 10;
+}
+
+.fc-event-google {
+  background-color: #ef4444 !important; /* Google red */
+  border-color: #b91c1c !important;
+  color: white !important;
+}
+
+.fc-event-microsoft {
+  background-color: #2563eb !important; /* Microsoft blue */
+  border-color: #1d4ed8 !important;
+  color: white !important;
+}
+
+.fc-event-conflict {
+  @apply bg-purple-500 text-white;
+}
+
+.fc-daygrid-event {
+  @apply rounded-lg;
+}
+
+.fc-timegrid-event {
+  @apply rounded-lg;
+}
+
+.fc-list-event {
+  @apply rounded-lg;
+}
+
+.fc-daygrid-day-frame {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors duration-200;
+}
+
+.fc-col-header-cell {
+  @apply bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-800;
+}
+
+.fc-col-header-cell-cushion {
+  @apply text-gray-700 dark:text-white;
+}
+
+.fc-daygrid-day-number {
+  @apply font-semibold text-gray-700 dark:text-white;
+}
+
+/* FullCalendar Dark Mode */
+.dark .fc {
+  @apply text-white;
+}
+
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th {
+  @apply border-gray-800;
+}
+
+.dark .fc-theme-standard .fc-scrollgrid {
+  @apply border-gray-800;
+}
+
+.dark .fc-daygrid-day {
+  @apply bg-black;
+}
+
+.dark .fc-daygrid-day.fc-day-today {
+  @apply bg-gray-900;
+}
+
+.dark .fc-timegrid-col {
+  @apply bg-black;
+}
+
+.dark .fc-timegrid-slot {
+  @apply border-gray-800;
+}
+
+.dark .fc-timegrid-slot-label {
+  @apply text-white;
+}
+
+.dark .fc-list-day-cushion {
+  @apply bg-gray-900 text-white;
+}
+
+.dark .fc-list-event {
+  @apply bg-gray-900 text-white;
+}
+
+.dark .fc-list-event:hover {
+  @apply bg-gray-800;
+}
+
+.dark .fc-daygrid-day-top {
+  @apply text-white;
+}
+
+.dark .fc-daygrid-day-events {
+  @apply text-white;
+}
+
+.dark .fc-scrollgrid-section-header {
+  @apply bg-black;
+}
+
+.dark .fc-scrollgrid-section-body {
+  @apply bg-black;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply animate-spin rounded-full border-2 border-gray-200 border-t-purple-600;
+}
+
+/* Fade In Animation */
+.fade-in {
+  @apply animate-fade-in;
+}
+
+/* Slide Up Animation */
+.slide-up {
+  @apply animate-slide-up;
+}
+
+/* Professional Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, input, select, textarea {
+  @apply transition-all duration-200;
+}
+
+/* Professional focus states */
+*:focus-visible {
+  @apply outline-none ring-2 ring-purple-500 ring-offset-2;
+}

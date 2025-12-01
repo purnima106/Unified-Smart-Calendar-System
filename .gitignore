@@ -1,0 +1,98 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.pyc
+
+# Virtual environment
+backend/.venv/
+.venv/
+venv/
+env/
+
+# Environment variables
+backend/.env
+.env
+*.env.local
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+backend/instance/
+backend/flask_session/
+flask_session/
+
+# Test reports and debug files (may contain sensitive data)
+test_report_*.json
+*_report_*.json
+backend/test_report_*.json
+backend/*_report_*.json
+
+# Debug and diagnostic scripts (may log sensitive information)
+# Note: Only ignores files in backend root, not backend/tests/ directory
+backend/debug_*.py
+backend/diagnose_*.py
+backend/check_*.py
+backend/test_*_inline.py
+backend/test_*_sync.py
+backend/simple_test.py
+verify_*.py
+
+# Credentials and secrets
+*credentials*.json
+*credentials*.txt
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*_secret*
+*_token*
+oauth_*.json
+token_*.json
+
+# Configuration files with potential secrets (if any local overrides exist)
+config.local.py
+settings.local.py
+local_config.py
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
