@@ -23,6 +23,8 @@ A unified calendar platform that:
 
 ### 🔐 Authentication & Integration
 - OAuth login with Google and Microsoft
+- **Multiple account support**: Connect multiple Google and Microsoft accounts to a single user profile
+- **No account limit**: Add as many different calendar accounts as needed
 - Secure token management and refresh
 - Multi-provider calendar synchronization
 
@@ -214,6 +216,15 @@ npm run dev
 - Complete OAuth flow to connect your calendar
 - You can connect both providers for full functionality
 
+#### Multiple Account Support
+- **Adding Multiple Accounts**: After logging in, use the "+ Add Google Account" or "+ Add Microsoft Account" buttons in the Dashboard to connect additional calendar accounts
+- **Account Limits**: 
+  - **No hard limit** on the number of accounts you can add
+  - You can connect multiple different email addresses (e.g., personal@gmail.com, work@gmail.com, company@outlook.com)
+  - The same email address cannot be added twice - the system will update the existing connection instead
+- **Managing Accounts**: View all connected accounts in the Dashboard, see sync status, and remove accounts as needed
+- **Unified View**: All events from all connected accounts appear in your unified calendar view
+
 ### 2. Dashboard
 - View calendar connection status
 - See quick statistics and summary
@@ -248,11 +259,13 @@ npm run dev
 ## 🔧 API Endpoints
 
 ### Authentication
-- `GET /api/auth/login/google` - Initiate Google OAuth
-- `GET /api/auth/login/microsoft` - Initiate Microsoft OAuth
+- `GET /api/auth/login/google` - Initiate Google OAuth (adds account if already logged in)
+- `GET /api/auth/login/microsoft` - Initiate Microsoft OAuth (adds account if already logged in)
 - `GET /api/auth/logout` - Logout user
 - `GET /api/auth/user/profile` - Get user profile
-- `GET /api/auth/user/connections` - Get calendar connections
+- `GET /api/auth/user/connections` - Get calendar connections (supports multiple accounts)
+- `GET /api/auth/user/connections/list` - Get detailed list of all connections
+- `DELETE /api/auth/user/connections/{id}` - Remove a connection
 
 ### Calendar Operations
 - `GET /api/calendar/events` - Get all events
