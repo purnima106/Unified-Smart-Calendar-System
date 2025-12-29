@@ -41,13 +41,19 @@ def create_public_booking():
       - start_time (ISO)
       - end_time (ISO)
       - duration_minutes (30/60)
+      - manual_meeting_link (optional) - if provided, uses this instead of auto-creating
     """
     try:
         payload = request.get_json() or {}
+        print(f"Received booking request: {payload}")
         result = BookingService.create_public_booking(payload)
+        print(f"Booking created successfully: {result}")
         return jsonify({"status": "success", "booking": result})
     except Exception as e:
         msg = str(e)
+        print(f"Booking error: {msg}")
+        import traceback
+        traceback.print_exc()
         if "no longer available" in msg.lower():
             return jsonify({"status": "error", "error": "slot_no_longer_available"}), 409
         return jsonify({"status": "error", "error": msg}), 400
