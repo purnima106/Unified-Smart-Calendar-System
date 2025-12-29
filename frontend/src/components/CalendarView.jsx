@@ -8,6 +8,11 @@ import { Video } from 'lucide-react';
 import { calendarAPI } from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
 
+// Use the same logic as our API service:
+// - Prefer VITE_API_URL when set (Docker / production)
+// - Fallback to local backend in dev
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const CalendarView = ({ user, connections }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +44,7 @@ const CalendarView = ({ user, connections }) => {
       
       // First, test the backend connection
       try {
-        const testResponse = await fetch('http://localhost:5000/api/calendar/test', {
+        const testResponse = await fetch(`${API_BASE_URL}/calendar/test`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +60,7 @@ const CalendarView = ({ user, connections }) => {
         }
       } catch (testError) {
         console.error('Backend connection test failed:', testError);
-        setError('Cannot connect to backend server. Please make sure the Flask server is running on http://localhost:5000');
+        setError(`Cannot connect to backend server. Please make sure the Flask server is running on ${API_BASE_URL}`);
         setLoading(false);
         return;
       }
@@ -216,7 +221,7 @@ const CalendarView = ({ user, connections }) => {
         console.warn('API service sync failed, trying direct fetch:', apiError);
         
         // Fallback to direct fetch
-        const response = await fetch('http://localhost:5000/api/calendar/sync/all', {
+        const response = await fetch(`${API_BASE_URL}/calendar/sync/all`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -244,7 +249,7 @@ const CalendarView = ({ user, connections }) => {
       setError('');
       console.log('Creating sample events...');
       
-      const response = await fetch('http://localhost:5000/api/calendar/create-sample-events', {
+      const response = await fetch(`${API_BASE_URL}/calendar/create-sample-events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -273,7 +278,7 @@ const CalendarView = ({ user, connections }) => {
       setError('');
       console.log('Clearing events...');
       
-      const response = await fetch('http://localhost:5000/api/calendar/clear-events', {
+      const response = await fetch(`${API_BASE_URL}/calendar/clear-events`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -302,7 +307,7 @@ const CalendarView = ({ user, connections }) => {
       setError('');
       console.log('Clearing conflicts...');
       
-      const response = await fetch('http://localhost:5000/api/calendar/clear-conflicts', {
+      const response = await fetch(`${API_BASE_URL}/calendar/clear-conflicts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -340,7 +345,7 @@ const CalendarView = ({ user, connections }) => {
         console.warn('API service view-only sync failed, trying direct fetch:', apiError);
         
         // Fallback to direct fetch
-        const response = await fetch('http://localhost:5000/api/calendar/sync/view-only', {
+        const response = await fetch(`${API_BASE_URL}/calendar/sync/view-only`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -377,7 +382,7 @@ const CalendarView = ({ user, connections }) => {
         console.warn('API service bidirectional sync failed, trying direct fetch:', apiError);
         
         // Fallback to direct fetch
-        const response = await fetch('http://localhost:5000/api/calendar/sync/bidirectional', {
+        const response = await fetch(`${API_BASE_URL}/calendar/sync/bidirectional`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -822,7 +827,7 @@ ${extendedProps.hasConflict ? '⚠️ This event has conflicts!' : ''}
           <div className="text-sm text-gray-500 mt-4">
             <p>For debugging:</p>
             <p>• Check the browser console for error messages</p>
-            <p>• Ensure Flask backend is running on http://localhost:5000</p>
+            <p>• Ensure Flask backend is running on {API_BASE_URL}</p>
             <p>• Check the debug panel above for more information</p>
           </div>
         </div>

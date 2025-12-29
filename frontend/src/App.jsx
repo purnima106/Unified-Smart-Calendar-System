@@ -10,6 +10,7 @@ import FreeSlotsView from './components/FreeSlotsView';
 import SummaryView from './components/SummaryView';
 import Navbar from './components/Navbar';
 import LoadingSpinner from './components/LoadingSpinner';
+import PublicBookingPage from './components/PublicBookingPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -89,87 +90,67 @@ function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <ThemeProvider>
-        <Router>
-          <Routes>
-            <Route 
-              path="/login" 
-              element={
-                <LoginPage 
-                  onLoginSuccess={checkAuthStatus}
-                  onConnectionsUpdate={updateUserConnections}
-                />
-              } 
-            />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </Router>
-      </ThemeProvider>
-    );
-  }
-
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-200">
-          <Navbar 
-            user={user} 
-            connections={userConnections}
-            onLogout={handleLogout}
-            onConnectionsUpdate={updateUserConnections}
+        <Routes>
+          {/* Public booking page (no login) */}
+          <Route path="/book/:username" element={<PublicBookingPage />} />
+
+          {/* Login */}
+          <Route
+            path="/login"
+            element={
+              user ? (
+                <Navigate to="/" replace />
+              ) : (
+                <LoginPage onLoginSuccess={checkAuthStatus} onConnectionsUpdate={updateUserConnections} />
+              )
+            }
           />
-          
-          <main className="container mx-auto px-4 py-8">
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <Dashboard 
+
+          {/* Authenticated app */}
+          <Route
+            path="/*"
+            element={
+              user ? (
+                <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-200">
+                  <Navbar
                     user={user}
                     connections={userConnections}
+                    onLogout={handleLogout}
                     onConnectionsUpdate={updateUserConnections}
                   />
-                } 
-              />
-              <Route 
-                path="/calendar" 
-                element={
-                  <CalendarView 
-                    user={user}
-                    connections={userConnections}
-                  />
-                } 
-              />
-              <Route 
-                path="/conflicts" 
-                element={
-                  <ConflictsView 
-                    user={user}
-                  />
-                } 
-              />
-              <Route 
-                path="/free-slots" 
-                element={
-                  <FreeSlotsView 
-                    user={user}
-                  />
-                } 
-              />
-              <Route 
-                path="/summary" 
-                element={
-                  <SummaryView 
-                    user={user}
-                  />
-                } 
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
+
+                  <main className="container mx-auto px-4 py-8">
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <Dashboard
+                            user={user}
+                            connections={userConnections}
+                            onConnectionsUpdate={updateUserConnections}
+                          />
+                        }
+                      />
+                      <Route
+                        path="/calendar"
+                        element={<CalendarView user={user} connections={userConnections} />}
+                      />
+                      <Route path="/conflicts" element={<ConflictsView user={user} />} />
+                      <Route path="/free-slots" element={<FreeSlotsView user={user} />} />
+                      <Route path="/summary" element={<SummaryView user={user} />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </main>
+                </div>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        </Routes>
       </Router>
     </ThemeProvider>
   );

@@ -21,6 +21,12 @@ class User(UserMixin, db.Model):
     # Calendar connections
     google_calendar_connected = db.Column(db.Boolean, default=False)
     microsoft_calendar_connected = db.Column(db.Boolean, default=False)
+
+    # Public booking profile
+    # - public_username is used to generate a shareable booking URL: /book/{public_username}
+    # - default_slot_duration_minutes controls the default duration shown on the public booking page
+    public_username = db.Column(db.String(120), unique=True, nullable=True)
+    default_slot_duration_minutes = db.Column(db.Integer, default=30)
     
     # Events relationship
     events = db.relationship('Event', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -50,6 +56,18 @@ class User(UserMixin, db.Model):
     def has_connected_calendars(self):
         """Check if user has any connected calendars"""
         return self.google_calendar_connected or self.microsoft_calendar_connected
+
+    def ensure_public_username(self):
+        """
+        Ensure the user has a public username.
+        NOTE: This may be overwritten by a migration/script that handles uniqueness.
+        """
+        if self.public_username:
+            return self.public_username
+        # Default to email prefix (safe + deterministic); uniqueness handled elsewhere.
+        base = (self.email.split('@')[0] if self.email else f"user{self.id}").strip().lower()
+        self.public_username = base
+        return self.public_username
     
     def __repr__(self):
         return f'<User {self.email}>'

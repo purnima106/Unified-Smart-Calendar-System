@@ -8,6 +8,7 @@ from services.google_service import GoogleCalendarService
 from services.microsoft_service import MicrosoftCalendarService
 import json
 import base64
+import os
 
 
 def decode_oauth_state(state_str):
@@ -52,6 +53,9 @@ def _reassign_connection_data(provider: str, old_user_id: int, new_user_id: int,
 
 auth_bp = Blueprint('auth', __name__)
 
+# Get frontend URL from environment (for redirects after OAuth callback)
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
 @auth_bp.route('/check-auth')
 def check_auth():
     """Check if user is authenticated without requiring login"""
@@ -62,6 +66,8 @@ def check_auth():
                 'id': current_user.id,
                 'email': current_user.email,
                 'name': current_user.name,
+                'public_username': getattr(current_user, 'public_username', None),
+                'default_slot_duration_minutes': getattr(current_user, 'default_slot_duration_minutes', 30),
                 'google_connected': current_user.google_calendar_connected,
                 'microsoft_connected': current_user.microsoft_calendar_connected,
                 'has_connected_calendars': current_user.has_connected_calendars()
@@ -99,12 +105,24 @@ def google_callback():
     try:
         code = request.args.get('code')
         state = request.args.get('state')
+        error = request.args.get('error')
+        
+        # Log all received parameters for debugging
+        print(f"Google callback received - Query params: {dict(request.args)}")
+        
+        # Check for OAuth errors from Google
+        if error:
+            error_description = request.args.get('error_description', 'Unknown error')
+            print(f"Google OAuth error: {error} - {error_description}")
+            return redirect(f'{FRONTEND_URL}/?error={error}&error_description={error_description}')
         
         if not code:
-            return jsonify({'error': 'No authorization code received'}), 400
+            print(f"Google callback called without code. Query params: {dict(request.args)}")
+            return redirect(f'{FRONTEND_URL}/?error=no_code&message=No authorization code received from Google')
         
         if not state:
-            return jsonify({'error': 'No state parameter received'}), 400
+            print(f"Google callback called without state. Query params: {dict(request.args)}")
+            return redirect(f'{FRONTEND_URL}/?error=no_state&message=No state parameter received from Google')
         
         # Debug: Print state information
         print(f"Received state: {state}")
@@ -168,6 +186,13 @@ def google_callback():
             db.session.add(target_user)
             db.session.flush()
             print(f"Created new user for Google account: {target_user.email} (ID: {target_user.id})")
+
+        # Ensure public booking username exists (used for /book/{username})
+        if not getattr(target_user, 'public_username', None):
+            try:
+                target_user.ensure_public_username()
+            except Exception:
+                pass
         
         # Ensure connection exists and belongs to target_user
         if existing_connection_any_user:
@@ -224,7 +249,7 @@ def google_callback():
             # Don't fail the login if sync fails
         
         # Redirect to frontend
-        return redirect('http://localhost:5173/')
+        return redirect(f'{FRONTEND_URL}/')
         
     except Exception as e:
         print(f"Google callback error: {str(e)}")
@@ -256,12 +281,24 @@ def microsoft_callback():
     try:
         code = request.args.get('code')
         state = request.args.get('state')
+        error = request.args.get('error')
+        
+        # Log all received parameters for debugging
+        print(f"Microsoft callback received - Query params: {dict(request.args)}")
+        
+        # Check for OAuth errors from Microsoft
+        if error:
+            error_description = request.args.get('error_description', 'Unknown error')
+            print(f"Microsoft OAuth error: {error} - {error_description}")
+            return redirect(f'{FRONTEND_URL}/?error={error}&error_description={error_description}')
         
         if not code:
-            return jsonify({'error': 'No authorization code received'}), 400
+            print(f"Microsoft callback called without code. Query params: {dict(request.args)}")
+            return redirect(f'{FRONTEND_URL}/?error=no_code&message=No authorization code received from Microsoft')
         
         if not state:
-            return jsonify({'error': 'No state parameter received'}), 400
+            print(f"Microsoft callback called without state. Query params: {dict(request.args)}")
+            return redirect(f'{FRONTEND_URL}/?error=no_state&message=No state parameter received from Microsoft')
         
         microsoft_service = MicrosoftCalendarService()
         
@@ -281,7 +318,7 @@ def microsoft_callback():
                 print("Redirecting to frontend - user should check their connections or try again")
                 
                 # Redirect to frontend - user can check if connection exists or try again
-                return redirect('http://localhost:5173/?microsoft_auth=retry&message=Authorization code was already used. Please check if your Microsoft account is already connected, or try connecting again.')
+                return redirect(f'{FRONTEND_URL}/?microsoft_auth=retry&message=Authorization code was already used. Please check if your Microsoft account is already connected, or try connecting again.')
             else:
                 # Re-raise other errors
                 raise
@@ -340,6 +377,13 @@ def microsoft_callback():
             db.session.add(target_user)
             db.session.flush()  # Flush to get user.id before creating connection
             print(f"Created new user: {microsoft_account_email} (ID: {target_user.id})")
+
+        # Ensure public booking username exists (used for /book/{username})
+        if not getattr(target_user, 'public_username', None):
+            try:
+                target_user.ensure_public_username()
+            except Exception:
+                pass
         
         if existing_connection_any_user:
             connection = existing_connection_any_user
@@ -397,7 +441,7 @@ def microsoft_callback():
             # Don't fail the login if sync fails
         
         # Redirect to frontend
-        return redirect('http://localhost:5173/')
+        return redirect(f'{FRONTEND_URL}/')
         
     except Exception as e:
         print(f"Microsoft callback error: {str(e)}")

@@ -202,7 +202,7 @@ class MicrosoftCalendarService:
             # Calculate time range in IST
             start_iso = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
             end_iso = (datetime.now(timezone.utc) + timedelta(days=days_forward)).isoformat()
-
+            
             events = self._fetch_events_from_all_calendars(client, start_iso, end_iso)
             synced_count = 0
             
@@ -607,7 +607,7 @@ class MicrosoftGraphClient:
             '$orderby': 'start/dateTime'
         }
         return self._get_paginated(url, params=params)
-
+    
     def get_calendar_events(self, start_date, end_date):
         """Get calendar events from Microsoft Graph API"""
         url = f"{self.base_url}/me/calendarView"

@@ -3,6 +3,9 @@ import { Calendar, Mail, Shield, Zap, Users, Clock, ArrowRight, AlertTriangle, R
 import { authAPI } from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+
 const LoginPage = ({ onLoginSuccess, onConnectionsUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +26,7 @@ const LoginPage = ({ onLoginSuccess, onConnectionsUpdate }) => {
 
   const checkBackendStatus = async () => {
     try {
-      const response = await fetch('http://localhost:5000/health');
+      const response = await fetch(`${BASE_URL}/health`);
       const data = await response.json();
       console.log('Backend health check:', data);
       setBackendStatus('healthy');

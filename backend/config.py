@@ -11,12 +11,13 @@ class Config:
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/auth/google/callback')
-    
+    # Default to the /api/auth/... callback used by the app
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:5000/api/auth/google/callback')
+
     # Microsoft OAuth Configuration
     MICROSOFT_CLIENT_ID = os.environ.get('MICROSOFT_CLIENT_ID')
     MICROSOFT_CLIENT_SECRET = os.environ.get('MICROSOFT_CLIENT_SECRET')
-    MICROSOFT_REDIRECT_URI = os.environ.get('MICROSOFT_REDIRECT_URI', 'http://localhost:5000/outlook_callback')
+    MICROSOFT_REDIRECT_URI = os.environ.get('MICROSOFT_REDIRECT_URI', 'http://localhost:5000/api/auth/microsoft/callback')
     MICROSOFT_TENANT_ID = os.environ.get('MICROSOFT_TENANT_ID')
     
     # Session Configuration

@@ -8,7 +8,10 @@ from models.user_model import db, User
 from models.calendar_connection_model import CalendarConnection
 from controllers.auth_controller import auth_bp
 from controllers.calendar_controller import calendar_bp
+from controllers.availability_controller import availability_bp
+from controllers.public_booking_controller import public_bp
 from datetime import datetime
+from db_migrations import apply_migrations
 
 def create_app(config_class=Config):
     """Application factory pattern"""
@@ -36,6 +39,8 @@ def create_app(config_class=Config):
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(calendar_bp, url_prefix='/api/calendar')
+    app.register_blueprint(availability_bp, url_prefix='/api/availability')
+    app.register_blueprint(public_bp, url_prefix='/api/public')
     
     # Google OAuth callback redirect (Google calls /oauth2callback by default)
     @app.route('/oauth2callback')
@@ -60,6 +65,11 @@ def create_app(config_class=Config):
     
     # Create database tables
     with app.app_context():
+        # Apply additive schema updates (no Alembic in this project)
+        try:
+            apply_migrations(db)
+        except Exception as e:
+            print(f"Warning: DB migrations failed (continuing): {e}")
         db.create_all()
     
     # Health check endpoint
@@ -131,3 +141,6 @@ def create_app(config_class=Config):
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+# When running under WSGI servers (gunicorn) expose the app instance
+app = create_app()

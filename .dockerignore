@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.pyc
+
+# Virtual environment
+backend/.venv/
+.venv/
+venv/
+env/
+
+# Environment variables (use docker-compose env_file instead)
+
+
+# Logs
+*.log
+logs/
+
+# Database (use volumes in docker-compose)
+*.db
+*.sqlite
+*.sqlite3
+backend/instance/
+backend/flask_session/
+flask_session/
+
+# Test files and reports
+backend/tests/
+backend/test_*.py
+backend/simple_test.py
+verify_testing_setup.py
+test_report_*.json
+*_report_*.json
+run_tests.bat
+run_tests.sh
+
+# Debug and diagnostic scripts
+backend/debug_*.py
+backend/diagnose_*.py
+backend/check_*.py
+backend/scripts/debug_*.py
+backend/scripts/list_*.py
+backend/scripts/remove_*.py
+
+# Development documentation (keep in Git, exclude from Docker)
+*.md
+!README.md
+backend/README.md
+
+# Migration scripts (one-time use)
+backend/migrate_*.py
+backend/create_*.py
+backend/reset_database.py
+
+# Node modules (will be installed in container)
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+docker-compose.yml
+Dockerfile
+Dockerfile.frontend

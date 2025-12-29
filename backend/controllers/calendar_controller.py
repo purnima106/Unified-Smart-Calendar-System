@@ -483,56 +483,19 @@ def get_events():
         for conn in connections:
             print(f"  - {conn.provider}: {conn.provider_account_email}")
         
-        # Build query to get events from connected accounts only
-        query = Event.query
-        
-        from datetime import timezone
-        now = datetime.now(timezone.utc)
-        
-        # Exclude mirrored blocker events (created by bidirectional sync)
+        # Build a simpler query for local/dev use:
+        # - Show all non-[Mirror] events belonging to this user
+        # - Respect the requested date range and provider, but DO NOT
+        #   aggressively filter by CalendarConnection metadata.
+        # This keeps behaviour consistent with the summary you see on the dashboard.
+        query = Event.query.filter(Event.user_id == user_id)
         query = query.filter(~Event.title.ilike('[mirror]%'))
-
-        # Debug: Check all events for this user before filtering
+ 
+        # Debug: Check all events for this user before date/provider filtering
         all_user_events = Event.query.filter(Event.user_id == user_id).all()
-        print(f"DEBUG: Total events for user {user_id} (before connection filtering): {len(all_user_events)}")
+        print(f"DEBUG: Total events for user {user_id} (before date/provider filtering): {len(all_user_events)}")
         for e in all_user_events[:5]:
             print(f"  - {e.provider}: {e.title} (organizer: {e.organizer or 'None'}, provider_event_id: {e.provider_event_id or 'None'})")
-        
-        # Filter by connected accounts
-        if connected_emails:
-            from sqlalchemy import or_, and_
-            # Match events by:
-            # 1. User ID matches AND provider matches one of the connected providers
-            # 2. Organizer email matches connected accounts (fallback)
-            # 3. Provider event ID format: "email:event_id" (fallback)
-            or_conditions = []
-            
-            # Primary condition: Events with matching user_id AND provider
-            # This is the most reliable match since we sync events with connection.user_id
-            or_conditions.append(
-                and_(
-                    Event.user_id == user_id,
-                    Event.provider.in_(connected_providers)
-                )
-            )
-            
-            # Fallback 1: Events with organizer matching connected emails (if organizer is set)
-            or_conditions.append(
-                and_(
-                    Event.organizer.in_(connected_emails),
-                    Event.organizer != None,
-                    Event.organizer != ''
-                )
-            )
-            
-            # Fallback 2: Events with provider_event_id matching email prefix format
-            for email in connected_emails:
-                or_conditions.append(Event.provider_event_id.like(f"{email}:%"))
-            
-            query = query.filter(or_(*or_conditions))
-        else:
-            # No connections - only show events for this user
-            query = query.filter(Event.user_id == user_id)
         
         if start_date:
             start_datetime = datetime.fromisoformat(start_date.replace('Z', '+00:00'))

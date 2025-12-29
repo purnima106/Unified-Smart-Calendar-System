@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Determine API base URL:
+// - Prefer VITE_API_URL from environment (used in Docker / production builds)
+// - Fallback to local backend when running the frontend directly (vite dev)
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -74,6 +77,18 @@ export const calendarAPI = {
   testConnection: () => api.get('/calendar/test'),
   createSampleEvents: () => api.post('/calendar/create-sample-events'),
   clearEvents: () => api.delete('/calendar/clear-events'),
+};
+
+// Availability API (owner-only)
+export const availabilityAPI = {
+  getMine: () => api.get('/availability'),
+  setMine: (payload) => api.post('/availability', payload),
+};
+
+// Public booking API (no auth)
+export const publicBookingAPI = {
+  getSlots: (username, params) => api.get(`/public/slots/${encodeURIComponent(username)}`, { params }),
+  book: (payload) => api.post('/public/book', payload),
 };
 
 // Health API

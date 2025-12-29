@@ -18,8 +18,10 @@ import {
   Edit2,
   X
 } from 'lucide-react';
-import { calendarAPI, authAPI } from '../services/api';
+import { calendarAPI, authAPI, availabilityAPI } from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const Dashboard = ({ user, connections, onConnectionsUpdate }) => {
   const [summary, setSummary] = useState(null);
@@ -35,13 +37,80 @@ const Dashboard = ({ user, connections, onConnectionsUpdate }) => {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState('');
 
+  // Availability settings (owner)
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilitySaving, setAvailabilitySaving] = useState(false);
+  const [availability, setAvailability] = useState([]); // [{day_of_week, start_time, end_time}]
+  const [defaultSlotDuration, setDefaultSlotDuration] = useState(30);
+
   useEffect(() => {
     if (user) {
       loadSummary();
       loadConnections();
       loadNotes();
+      loadAvailability();
     }
   }, [user]);
+
+  const loadAvailability = async () => {
+    try {
+      setAvailabilityLoading(true);
+      const res = await availabilityAPI.getMine();
+      const data = res.data || {};
+      setAvailability(Array.isArray(data.availability) ? data.availability : []);
+      setDefaultSlotDuration(data.default_slot_duration_minutes || 30);
+    } catch (e) {
+      // Don't block dashboard if availability isn't configured yet
+      console.warn('Availability not loaded:', e?.response?.data || e.message);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
+  const saveAvailability = async () => {
+    try {
+      setAvailabilitySaving(true);
+      setError('');
+
+      const payload = {
+        default_slot_duration_minutes: defaultSlotDuration,
+        availability: availability
+          .filter((a) => a && a.start_time && a.end_time)
+          .map((a) => ({
+            day_of_week: a.day_of_week,
+            start_time: a.start_time,
+            end_time: a.end_time,
+          })),
+      };
+
+      const res = await availabilityAPI.setMine(payload);
+      const data = res.data || {};
+      setAvailability(Array.isArray(data.availability) ? data.availability : []);
+      setDefaultSlotDuration(data.default_slot_duration_minutes || 30);
+    } catch (e) {
+      setError(e?.response?.data?.error || e.message || 'Failed to save availability');
+    } finally {
+      setAvailabilitySaving(false);
+    }
+  };
+
+  const toggleDay = (day) => {
+    const existing = availability.find((a) => a.day_of_week === day);
+    if (existing) {
+      setAvailability(availability.filter((a) => a.day_of_week !== day));
+    } else {
+      setAvailability([...availability, { day_of_week: day, start_time: '10:00', end_time: '18:00' }]);
+    }
+  };
+
+  const setDayTime = (day, field, value) => {
+    setAvailability(
+      availability.map((a) => (a.day_of_week === day ? { ...a, [field]: value } : a))
+    );
+  };
+
+  const publicUsername = user?.public_username || user?.email?.split('@')?.[0];
+  const publicLink = `${window.location.origin}/book/${publicUsername}`;
 
   // Load notes from localStorage
   const loadNotes = () => {
@@ -200,7 +269,7 @@ const Dashboard = ({ user, connections, onConnectionsUpdate }) => {
         console.warn('API service bidirectional sync failed, trying direct fetch:', apiError);
         
         // Fallback to direct fetch
-        const response = await fetch('http://localhost:5000/api/calendar/sync/bidirectional', {
+        const response = await fetch(`${API_BASE_URL}/calendar/sync/bidirectional`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -257,7 +326,7 @@ const Dashboard = ({ user, connections, onConnectionsUpdate }) => {
         console.warn('API service event creation failed, trying direct fetch:', apiError);
         
         // Fallback to direct fetch
-        const response = await fetch('http://localhost:5000/api/calendar/create-event', {
+        const response = await fetch(`${API_BASE_URL}/calendar/create-event`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(eventData)
@@ -571,6 +640,135 @@ const Dashboard = ({ user, connections, onConnectionsUpdate }) => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Availability Settings (New Feature) */}
+      <div className="space-y-4">
+        <div className="section-header">
+          <div>
+            <h2 className="section-title dark:text-white">Availability</h2>
+            <p className="section-subtitle dark:text-white">
+              Configure your public booking availability (Calendly-style). Clients see only available slots.
+            </p>
+          </div>
+        </div>
+
+        <div className="card-hover">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Public booking link</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 break-all">
+                {publicLink}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Share this link with clients. No login required.
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(publicLink)}
+                className="btn-secondary"
+              >
+                Copy link
+              </button>
+              <Link to={`/book/${publicUsername}`} className="btn-primary">
+                Preview booking page
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-6 grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Default slot duration</div>
+              <div className="flex gap-2">
+                {[30, 60].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDefaultSlotDuration(d)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                      defaultSlotDuration === d
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                    }`}
+                  >
+                    {d} min
+                  </button>
+                ))}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Clients can still switch between 30/60 minutes on the public page.
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 space-y-3">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Working days</div>
+              {availabilityLoading ? (
+                <div className="flex items-center gap-3 py-6">
+                  <LoadingSpinner size="sm" />
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Loading availability…</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {[
+                    { day: 0, label: 'Mon' },
+                    { day: 1, label: 'Tue' },
+                    { day: 2, label: 'Wed' },
+                    { day: 3, label: 'Thu' },
+                    { day: 4, label: 'Fri' },
+                    { day: 5, label: 'Sat' },
+                    { day: 6, label: 'Sun' },
+                  ].map(({ day, label }) => {
+                    const enabled = availability.some((a) => a.day_of_week === day);
+                    const item = availability.find((a) => a.day_of_week === day);
+                    return (
+                      <div key={day} className="flex flex-col md:flex-row md:items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                        <button
+                          onClick={() => toggleDay(day)}
+                          className={`px-3 py-2 rounded-lg text-sm font-semibold ${
+                            enabled ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          {label}
+                        </button>
+
+                        {enabled ? (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-gray-600 dark:text-gray-300">From</span>
+                            <input
+                              type="time"
+                              value={item?.start_time || '10:00'}
+                              onChange={(e) => setDayTime(day, 'start_time', e.target.value)}
+                              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-white"
+                            />
+                            <span className="text-sm text-gray-600 dark:text-gray-300">to</span>
+                            <input
+                              type="time"
+                              value={item?.end_time || '18:00'}
+                              onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
+                              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Not available</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={saveAvailability}
+                  disabled={availabilitySaving}
+                  className="btn-primary"
+                >
+                  {availabilitySaving ? 'Saving…' : 'Save availability'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions */}
